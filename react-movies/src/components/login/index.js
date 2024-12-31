@@ -8,10 +8,10 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
 import { login, getMoviePlayList, getShowPlayList } from "../../api/login-api"; // Ensure login API accepts username
-import { setEmail, setUsername, setlogin, setShowPlaylist, setMoviePlaylist } from "../../user/user";
+import { setUsername, setlogin } from "../../user/user";
 import { updateFavoriteShows } from "../../contexts/showsContext";
 import { updateFavoriteMovies } from "../../contexts/moviesContext";
-
+import { useAuth } from "../../contexts/authContext";
 
 const styles = {
   root: {
@@ -42,11 +42,18 @@ const styles = {
       width: "100%",
     },
   },
+  errorMessage: {
+    color: "red",
+    marginTop: 2,
+    textAlign: "center",
+  },
 };
 
 const LoginForm = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { authenticateUser } = useAuth();
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSnackClose = () => {
     setOpen(false);
@@ -73,9 +80,8 @@ const LoginForm = () => {
       if (result.success) {
         setOpen(true);
         setUsername(data.username);
+        authenticateUser(result.token)
         setlogin(true);
-        //setShowPlaylist();
-        //setMoviePlaylist();
         console.log(await getShowPlayList(data.username))
         const showResponse = await getShowPlayList(data.username);
         const showPlaylist = showResponse.msg;
@@ -89,9 +95,12 @@ const LoginForm = () => {
         navigate("/movies");
       } else {
         console.error(result.message);
+        setErrorMessage("Incorrect password or username.");
+
       }
     } catch (error) {
       console.error("Error logging in user:", error);
+      setErrorMessage("An error occurred while logging in.");
     }
   };
 
@@ -170,6 +179,12 @@ const LoginForm = () => {
           </Typography>
         )}
 
+        {errorMessage && (
+          <Typography variant="h6" component="p" sx={styles.errorMessage}>
+            {errorMessage}
+          </Typography>
+        )}
+
         <Box sx={styles.buttons}>
           <Button type="submit" variant="contained" color="primary">
             Login
@@ -183,6 +198,7 @@ const LoginForm = () => {
                 username: "",
                 password: "",
               });
+              setErrorMessage("");
             }}
           >
             Reset

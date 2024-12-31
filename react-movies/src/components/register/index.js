@@ -8,7 +8,8 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
 import { signup } from "../../api/login-api";
-import { setEmail, setUsername, setlogin } from "../../user/user";
+import { setUsername, setlogin } from "../../user/user";
+import { useAuth } from "../../contexts/authContext";
 
 const styles = {
   root: {
@@ -44,6 +45,8 @@ const styles = {
 const RegisterForm = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { authenticateUser } = useAuth();
+  
 
   const handleSnackClose = () => {
     setOpen(false);
@@ -70,6 +73,7 @@ const RegisterForm = () => {
       if (result && result.success) {
         setOpen(true);
         setUsername(data.username);
+        authenticateUser(result.token)
         setlogin(true);
         navigate("/movies");
       } else {

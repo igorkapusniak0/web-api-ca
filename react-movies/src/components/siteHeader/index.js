@@ -13,6 +13,7 @@ import { styled } from "@mui/material/styles";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { setlogin, getLogin, getUsername } from "../../user/user";
+import { useAuth } from "../../contexts/authContext";
 
 const Offset = styled("div")(({ theme }) => theme.mixins.toolbar);
 
@@ -57,10 +58,12 @@ const SiteHeader = ({ history }) => {
 
   const loggedIn = getLogin();
   const username = getUsername();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     console.log("Logged Out")
     setlogin(false); 
+    logout();
     navigate("/movies");
     navigate(0);
   };

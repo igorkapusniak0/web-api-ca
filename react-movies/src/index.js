@@ -35,6 +35,9 @@ import ActorPage from "./pages/actorDetailsPage";
 import Login from "./pages/loginPage";
 import Register from "./pages/registerPage";
 
+import ProtectedRoute from "./components/protectedRoute";
+import { AuthProvider } from "./contexts/authContext"; 
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -48,12 +51,12 @@ const queryClient = new QueryClient({
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthProvider>
       <BrowserRouter>
         <SiteHeader />
         <MoviesContextProvider>
           <ShowsContextProvider>
             <Routes>
-              <Route path="/movies/favorites" element={<FavoriteMoviesPage />} />
               <Route path="/movies/:id" element={<MoviePage />} />
               <Route path="/movies" element={<HomePage />} />
               <Route path="/movies/upcoming" element={<UpcomingMoviesPage />} />
@@ -63,7 +66,6 @@ const App = () => {
               <Route path="/shows/upcoming" element={<UpcomingShowsPage />} />
               <Route path="/shows/top_rated" element={<TopRatedShowsPage />} />
               <Route path="/shows/:id" element={<ShowPage />} />
-              <Route path="/shows/favorites" element={<FavoriteShowsPage />} />
               
               <Route path="/movie_reviews/:id" element={<MovieReviewPage /> } />
               <Route path="/movie_reviews/form" element={<AddMovieReviewPage /> } />
@@ -76,12 +78,30 @@ const App = () => {
               <Route path="/login" element={<Login/>} />
               <Route path="/register" element={<Register/>} />
 
+              <Route 
+                  path="/movies/favorites" 
+                  element={
+                    <ProtectedRoute>
+                      <FavoriteMoviesPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/shows/favorites" 
+                  element={
+                    <ProtectedRoute>
+                      <FavoriteShowsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+
 
               <Route path="*" element={<Navigate to="/movies" />} />
             </Routes>
           </ShowsContextProvider>
         </MoviesContextProvider>
       </BrowserRouter>
+      </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
