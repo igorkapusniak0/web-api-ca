@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { setMoviePlaylist } from "../api/db-api";
-import { getLogin, getEmail, getMoviePlayList } from "../user/user";
+import { setMoviePlaylist } from "../api/login-api";
+import { getLogin, getUsername } from "../user/user";
 
 
 export const MoviesContext = React.createContext(null);
@@ -9,7 +9,7 @@ let externalSetFavorites = null;
 
 
 const MoviesContextProvider = (props) => {
-  const [favorites, setFavorites] = useState( getMoviePlayList() || [] )
+  const [favorites, setFavorites] = useState( [] )
   const [playlist, setPlaylist] = useState( [] )
 
   const addToFavorites = (movie) => {
@@ -22,7 +22,7 @@ const MoviesContextProvider = (props) => {
     }
     setFavorites(newFavorites)
     if (getLogin()){
-      setMoviePlaylist(getEmail(), newFavorites)
+      setMoviePlaylist(getUsername(), newFavorites)
       console.log("old", favorites)
       console.log("new",newFavorites)
     }
@@ -36,9 +36,13 @@ const MoviesContextProvider = (props) => {
 
   // We will use this function in the next step
   const removeFromFavorites = (movie) => {
-    setFavorites( favorites.filter(
-      (mId) => mId !== movie.id
-    ) )
+    const updatedFavourites = favorites.filter((mId) => mId !== movie.id);
+    setFavorites(updatedFavourites);
+    console.log("Updated fav:", updatedFavourites);
+    if (getLogin()){
+      setMoviePlaylist(getUsername(), updatedFavourites)
+      
+    }
   };
 
   const addToPlaylist = (movie) => {
@@ -55,6 +59,7 @@ const MoviesContextProvider = (props) => {
   
   // We will use this function in the next step
   const removeFromPlaylist = (movie) => {
+    
     setPlaylist( playlist.filter(
       (mId) => mId !== movie.id
     ) )

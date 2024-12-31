@@ -7,10 +7,11 @@ import { useForm, Controller } from "react-hook-form";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../api/db-api";
-import { setEmail, setUsername, setlogin, setShowPlaylist, setMoviePlaylist, getShowPlayList } from "../../user/user";
-import {updateFavoriteShows} from "../../contexts/showsContext";
-import {updateFavoriteMovies} from "../../contexts/moviesContext";
+import { login, getMoviePlayList, getShowPlayList } from "../../api/login-api"; // Ensure login API accepts username
+import { setEmail, setUsername, setlogin, setShowPlaylist, setMoviePlaylist } from "../../user/user";
+import { updateFavoriteShows } from "../../contexts/showsContext";
+import { updateFavoriteMovies } from "../../contexts/moviesContext";
+
 
 const styles = {
   root: {
@@ -28,7 +29,7 @@ const styles = {
     },
   },
   textField: {
-    width: "100%", 
+    width: "100%",
   },
   buttons: {
     display: "flex",
@@ -49,11 +50,11 @@ const LoginForm = () => {
 
   const handleSnackClose = () => {
     setOpen(false);
-    navigate("/"); 
+    navigate("/");
   };
 
   const defaultValues = {
-    email: "",
+    username: "",
     password: "",
   };
 
@@ -62,28 +63,36 @@ const LoginForm = () => {
     formState: { errors },
     handleSubmit,
     reset,
-  } = useForm(defaultValues);
+  } = useForm({ defaultValues });
 
   const onSubmit = async (data) => {
     try {
-        const result = await loginUser(data);
-        console.log(result)
-        if (result) {
-          setOpen(true);
-          setEmail(result.loginStatus.email);
-          setUsername(result.loginStatus.username);
-          setlogin(true);
-          setShowPlaylist(result.loginStatus.showPlaylist);
-          setMoviePlaylist(result.loginStatus.moviePlaylist);
-          updateFavoriteShows(result.loginStatus.showPlaylist);
-          updateFavoriteMovies(result.loginStatus.moviePlaylist)
-          navigate("/movies");
-        } else {
-          console.error(result.message);
-        }
-      } catch (error) {
-        console.error("Error registering user:", error);
+      const result = await login(data.username, data.password); 
+      console.log("Login result:", JSON.stringify(result, null, 2));
+      console.log(result)
+      if (result.success) {
+        setOpen(true);
+        setUsername(data.username);
+        setlogin(true);
+        //setShowPlaylist();
+        //setMoviePlaylist();
+        console.log(await getShowPlayList(data.username))
+        const showResponse = await getShowPlayList(data.username);
+        const showPlaylist = showResponse.msg;
+        console.log(showPlaylist);
+        const movieResponse = await getMoviePlayList(data.username);
+        const moviePlaylist = movieResponse.msg;
+        console.log(moviePlaylist);
+        updateFavoriteShows(showPlaylist);
+        updateFavoriteMovies(moviePlaylist);
+
+        navigate("/movies");
+      } else {
+        console.error(result.message);
       }
+    } catch (error) {
+      console.error("Error logging in user:", error);
+    }
   };
 
   return (
@@ -108,15 +117,8 @@ const LoginForm = () => {
 
       <form sx={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
         <Controller
-          name="email"
+          name="username"
           control={control}
-          rules={{
-            required: "Email is required",
-            pattern: {
-              value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-              message: "Enter a valid email address",
-            },
-          }}
           defaultValue=""
           render={({ field: { onChange, value } }) => (
             <TextField
@@ -126,16 +128,16 @@ const LoginForm = () => {
               required
               onChange={onChange}
               value={value}
-              id="email"
-              label="Email"
-              name="email"
+              id="username"
+              label="Username"
+              name="username"
               autoFocus
             />
           )}
         />
-        {errors.email && (
+        {errors.username && (
           <Typography variant="h6" component="p" align="center">
-            {errors.email.message}
+            {errors.username.message}
           </Typography>
         )}
 
@@ -178,7 +180,7 @@ const LoginForm = () => {
             color="secondary"
             onClick={() => {
               reset({
-                email: "",
+                username: "",
                 password: "",
               });
             }}

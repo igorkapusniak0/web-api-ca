@@ -7,9 +7,8 @@ import { useForm, Controller } from "react-hook-form";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../../api/db-api.js"
+import { signup } from "../../api/login-api";
 import { setEmail, setUsername, setlogin } from "../../user/user";
-
 
 const styles = {
   root: {
@@ -52,7 +51,7 @@ const RegisterForm = () => {
   };
 
   const defaultValues = {
-    email: "",
+    username: "",
     password: "",
   };
 
@@ -61,24 +60,24 @@ const RegisterForm = () => {
     formState: { errors },
     handleSubmit,
     reset,
-  } = useForm(defaultValues);
+  } = useForm({ defaultValues });
 
-  const onSubmit = async (data) => { 
+  const onSubmit = async (data) => {
     try {
-      const result = await registerUser(data); 
-      if (result && result.loginStatus) {
+      const result = await signup(data.username, data.password);
+      console.log("Signup Result:", result);
+
+      if (result && result.success) {
         setOpen(true);
-        console.log("result", result);
-        setEmail(result.loginStatus.email);
-        setUsername(result.loginStatus.username);
+        setUsername(data.username);
         setlogin(true);
         navigate("/movies");
       } else {
-          console.error(result.message);
-        }
-      } catch (error) {
-        console.error("Error registering user:", error);
+        console.error("Signup failed:", result.message || "Unexpected response structure");
       }
+    } catch (error) {
+      console.error("Error registering user:", error);
+    }
   };
 
   return (
@@ -102,15 +101,9 @@ const RegisterForm = () => {
       </Snackbar>
 
       <form sx={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
-      <Controller
+        <Controller
           name="username"
           control={control}
-          rules={{
-            required: "Username is required",
-            pattern: {
-              message: "Enter a valid username",
-            },
-          }}
           defaultValue=""
           render={({ field: { onChange, value } }) => (
             <TextField
@@ -133,43 +126,15 @@ const RegisterForm = () => {
         )}
 
         <Controller
-          name="email"
-          control={control}
-          rules={{
-            required: "Email is required",
-            pattern: {
-              value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-              message: "Enter a valid email address",
-            },
-          }}
-          defaultValue=""
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              sx={styles.textField}
-              variant="outlined"
-              margin="normal"
-              required
-              onChange={onChange}
-              value={value}
-              id="email"
-              label="Email"
-              name="email"
-              autoFocus
-            />
-          )}
-        />
-        {errors.email && (
-          <Typography variant="h6" component="p" align="center">
-            {errors.email.message}
-          </Typography>
-        )}
-
-        <Controller
           name="password"
           control={control}
           rules={{
             required: "Password is required",
             minLength: { value: 6, message: "Password must be at least 6 characters long" },
+            pattern: {
+              value: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+              message: "Password must contain at least one letter, one digit, and one special character",
+            },
           }}
           defaultValue=""
           render={({ field: { onChange, value } }) => (
@@ -204,7 +169,6 @@ const RegisterForm = () => {
             onClick={() => {
               reset({
                 username: "",
-                email: "",
                 password: "",
               });
             }}

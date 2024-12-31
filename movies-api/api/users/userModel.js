@@ -19,6 +19,14 @@ const UserSchema = new Schema({
         'Password must be at least 8 characters long and contain at least one letter, one digit, and one special character.',
     },
   },
+  moviePlaylist: { 
+    type: Array,
+    required: false,
+  },
+  showPlaylist: {
+    type: Array,
+    required: false,
+  },
 });
 
 UserSchema.methods.comparePassword = async function (passw) { 

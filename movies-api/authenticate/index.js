@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../api/users/userModel.js';
 
 const authenticate = async (request, response, next) => {
+
     try { 
         const authHeader = request.headers.authorization;
         if (!authHeader) throw new Error('No authorization header');

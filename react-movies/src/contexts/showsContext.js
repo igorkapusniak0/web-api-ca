@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { setShowPlaylist } from "../api/db-api";
-import { getLogin, getEmail, getShowPlayList } from "../user/user";
+import { getLogin, getUsername } from "../user/user";
+import { setShowsPlaylist } from "../api/login-api";
 
 
 export const ShowsContext = React.createContext(null);
@@ -8,7 +8,7 @@ export const ShowsContext = React.createContext(null);
 let externalSetFavorites = null; 
 
 const ShowsContextProvider = (props) => {
-  const [favorites, setFavorites] = useState( getShowPlayList() || [] )
+  const [favorites, setFavorites] = useState( [] )
   const [playlist, setPlaylist] = useState( [] )
 
   const addToFavorites = (show) => {
@@ -21,7 +21,7 @@ const ShowsContextProvider = (props) => {
     }
     setFavorites(newFavorites)
     if (getLogin()){
-      setShowPlaylist(getEmail(), newFavorites)
+      setShowsPlaylist(getUsername(), newFavorites)
       console.log("old", favorites)
       console.log("new",newFavorites)
     }
@@ -35,11 +35,15 @@ const ShowsContextProvider = (props) => {
   };
   
   // We will use this function in the next step
-  const removeFromFavorites = (show) => {
-    setFavorites( favorites.filter(
-      (mId) => mId !== show.id
-    ) )
-  };
+  const removeFromFavorites = (movie) => {
+      const updatedFavourites = favorites.filter((mId) => mId !== movie.id);
+      setFavorites(updatedFavourites);
+      console.log("Updated fav:", updatedFavourites);
+      if (getLogin()){
+        setShowsPlaylist(getUsername(), updatedFavourites)
+        
+      }
+    };
 
   const addToPlaylist = (show) => {
     let newPlaylist = [];
