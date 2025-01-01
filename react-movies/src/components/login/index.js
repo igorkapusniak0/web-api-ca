@@ -7,7 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
-import { login, getMoviePlayList, getShowPlayList } from "../../api/login-api"; // Ensure login API accepts username
+import { login, getMoviePlayList, getShowPlayList } from "../../api/login-api"; 
 import { setUsername, setlogin } from "../../user/user";
 import { updateFavoriteShows } from "../../contexts/showsContext";
 import { updateFavoriteMovies } from "../../contexts/moviesContext";
@@ -202,6 +202,12 @@ const LoginForm = () => {
             }}
           >
             Reset
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/reset_password")}>
+            Forgot Password
           </Button>
         </Box>
       </form>

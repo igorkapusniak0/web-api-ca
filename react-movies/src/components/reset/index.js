@@ -6,10 +6,8 @@ import Box from "@mui/material/Box";
 import { useForm, Controller } from "react-hook-form";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { useNavigate } from "react-router-dom";
-import { signup } from "../../api/login-api";
-import { setUsername, setlogin } from "../../user/user";
-import { useAuth } from "../../contexts/authContext";
+import { useNavigate, useParams } from "react-router-dom";
+import { resetPassword } from "../../api/login-api"; 
 
 const styles = {
   root: {
@@ -27,7 +25,7 @@ const styles = {
     },
   },
   textField: {
-    width: "100%", 
+    width: "100%",
   },
   buttons: {
     display: "flex",
@@ -40,23 +38,27 @@ const styles = {
       width: "100%",
     },
   },
+  errorMessage: {
+    color: "red",
+    marginTop: 2,
+    textAlign: "center",
+  },
 };
 
-const RegisterForm = () => {
+const ResetForm = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { authenticateUser } = useAuth();
+  const [errorMessage, setErrorMessage] = useState("");
+  const { id } = useParams();
   
-
   const handleSnackClose = () => {
     setOpen(false);
-    navigate("/"); 
+    navigate("/login"); 
   };
 
   const defaultValues = {
-    username: "",
-    email: "",
     password: "",
+    repeatPassword: ""
   };
 
   const {
@@ -67,28 +69,29 @@ const RegisterForm = () => {
   } = useForm({ defaultValues });
 
   const onSubmit = async (data) => {
+    const { password, repeatPassword } = data;
     try {
-      const result = await signup(data.username, data.password, data.email);
-      console.log("Signup Result:", result);
-
-      if (result && result.success) {
-        setOpen(true);
-        setUsername(data.username);
-        authenticateUser(result.token)
-        setlogin(true);
-        navigate("/movies");
-      } else {
-        console.error("Signup failed:", result.message);
-      }
+        if (password === repeatPassword){
+            console.log(password)
+            const result = await resetPassword(id, password)
+            console.log(result)
+            navigate('/login')
+        }
+        else{
+            setErrorMessage("Passwords do not match");
+        }
+        
+      
     } catch (error) {
-      console.error("Error registering user:", error);
+      console.error("Error resetting password:", error);
+      setErrorMessage("An error occurred");
     }
   };
 
   return (
     <Box component="div" sx={styles.root}>
       <Typography component="h2" variant="h3" align="center">
-        Register
+        Reset Password
       </Typography>
       <Snackbar
         sx={styles.snack}
@@ -101,70 +104,18 @@ const RegisterForm = () => {
           variant="filled"
           onClose={handleSnackClose}
         >
-          <Typography variant="h4">Register successful!</Typography>
+          <Typography variant="h4">Password reset request sent successfully!</Typography>
         </MuiAlert>
       </Snackbar>
 
       <form sx={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
-        <Controller
-          name="username"
-          control={control}
-          defaultValue=""
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              sx={styles.textField}
-              variant="outlined"
-              margin="normal"
-              required
-              onChange={onChange}
-              id="username"
-              label="Username"
-              name="username"
-              autoFocus
-            />
-          )}
-        />
-        {errors.username && (
-          <Typography variant="h6" component="p" align="center">
-            {errors.username.message}
-          </Typography>
-        )}
-
+        
 <Controller
-          name="email"
-          control={control}
-          defaultValue=""
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              sx={styles.textField}
-              variant="outlined"
-              margin="normal"
-              required
-              onChange={onChange}
-              id="email"
-              label="Email"
-              name="email"
-              autoFocus
-            />
-          )}
-        />
-        {errors.email && (
-          <Typography variant="h6" component="p" align="center">
-            {errors.email.message}
-          </Typography>
-        )}
-
-
-        <Controller
           name="password"
           control={control}
           rules={{
             required: "Password is required",
             minLength: { value: 6, message: "Password must be at least 6 characters long" },
-            pattern: {
-              value: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-              message: "Password must contain at least one letter, one digit, and one special character",
-            },
           }}
           defaultValue=""
           render={({ field: { onChange, value } }) => (
@@ -176,7 +127,7 @@ const RegisterForm = () => {
               name="password"
               value={value}
               onChange={onChange}
-              label="Password"
+              label="New Password"
               type="password"
               id="password"
             />
@@ -188,9 +139,44 @@ const RegisterForm = () => {
           </Typography>
         )}
 
+<Controller
+          name="repeatPassword"
+          control={control}
+          rules={{
+            required: "Password is required",
+            minLength: { value: 6, message: "Password must be at least 6 characters long" },
+          }}
+          defaultValue=""
+          render={({ field: { onChange, value } }) => (
+            <TextField
+              sx={styles.textField}
+              variant="outlined"
+              margin="normal"
+              required
+              name="repeatPassword"
+              value={value}
+              onChange={onChange}
+              label="Repeat New Password"
+              type="password"
+              id="repeatPassword"
+            />
+          )}
+        />
+        {errors.repeatPassword && (
+          <Typography variant="h6" component="p" align="center">
+            {errors.repeatPassword.message}
+          </Typography>
+        )}
+
+        {errorMessage && (
+          <Typography variant="h6" component="p" sx={styles.errorMessage}>
+            {errorMessage}
+          </Typography>
+        )}
+
         <Box sx={styles.buttons}>
           <Button type="submit" variant="contained" color="primary">
-            Register
+            Reset Password
           </Button>
           <Button
             type="reset"
@@ -198,10 +184,9 @@ const RegisterForm = () => {
             color="secondary"
             onClick={() => {
               reset({
-                username: "",
                 email: "",
-                password: "",
               });
+              setErrorMessage("");
             }}
           >
             Reset
@@ -212,4 +197,4 @@ const RegisterForm = () => {
   );
 };
 
-export default RegisterForm;
+export default ResetForm;

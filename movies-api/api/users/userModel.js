@@ -8,6 +8,15 @@ const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8
 
 const UserSchema = new Schema({
   username: { type: String, unique: true, required: true },
+  email: {
+    type: String,
+    unique: true,
+    required: [true, 'Email is required'],
+    match: [
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 
+      'Please provide a valid email address'
+    ],
+  },
   password: {
     type: String,
     required: true,
@@ -35,6 +44,10 @@ UserSchema.methods.comparePassword = async function (passw) {
 
 UserSchema.statics.findByUserName = function (username) {
   return this.findOne({ username: username });
+};
+
+UserSchema.statics.findByEmail = function (email) {
+  return this.findOne({ email: email }).select('email');
 };
 
 UserSchema.pre('save', async function(next) {

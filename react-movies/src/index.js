@@ -36,7 +36,10 @@ import Login from "./pages/loginPage";
 import Register from "./pages/registerPage";
 
 import ProtectedRoute from "./components/protectedRoute";
-import { AuthProvider } from "./contexts/authContext"; 
+import { AuthProvider } from "./contexts/authContext";
+
+import ResetPassword from "./pages/resetPassword";
+import Reset from "./pages/reset";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,6 +65,8 @@ const App = () => {
               <Route path="/movies/upcoming" element={<UpcomingMoviesPage />} />
               <Route path="/movies/top_rated" element={<TopRatedMoviesPage />} />
 
+              <Route path="/reset_password" element={<ResetPassword />} />
+
               <Route path="/shows" element={<ShowsHomePage />} />
               <Route path="/shows/upcoming" element={<UpcomingShowsPage />} />
               <Route path="/shows/top_rated" element={<TopRatedShowsPage />} />
@@ -77,6 +82,8 @@ const App = () => {
 
               <Route path="/login" element={<Login/>} />
               <Route path="/register" element={<Register/>} />
+
+              <Route path="/reset/:id" element={<Reset/>} />
 
               <Route 
                   path="/movies/favorites" 

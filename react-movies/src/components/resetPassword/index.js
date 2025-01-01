@@ -7,9 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
-import { signup } from "../../api/login-api";
-import { setUsername, setlogin } from "../../user/user";
-import { useAuth } from "../../contexts/authContext";
+import { getEmail } from "../../api/login-api"; 
 
 const styles = {
   root: {
@@ -27,7 +25,7 @@ const styles = {
     },
   },
   textField: {
-    width: "100%", 
+    width: "100%",
   },
   buttons: {
     display: "flex",
@@ -40,23 +38,24 @@ const styles = {
       width: "100%",
     },
   },
+  errorMessage: {
+    color: "red",
+    marginTop: 2,
+    textAlign: "center",
+  },
 };
 
-const RegisterForm = () => {
+const ResetPasswordForm = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { authenticateUser } = useAuth();
+  const [errorMessage, setErrorMessage] = useState("");
   
-
   const handleSnackClose = () => {
-    setOpen(false);
-    navigate("/"); 
+    setOpen(false); 
   };
 
   const defaultValues = {
-    username: "",
     email: "",
-    password: "",
   };
 
   const {
@@ -68,27 +67,26 @@ const RegisterForm = () => {
 
   const onSubmit = async (data) => {
     try {
-      const result = await signup(data.username, data.password, data.email);
-      console.log("Signup Result:", result);
-
-      if (result && result.success) {
-        setOpen(true);
-        setUsername(data.username);
-        authenticateUser(result.token)
-        setlogin(true);
-        navigate("/movies");
+      const result = await getEmail(data.email);
+      console.log(result); 
+  
+      if (result && result.msg) {
+        setOpen(true);  
+        navigate("/login");
+        console.log("Password reset sent to:", data.email);
       } else {
-        console.error("Signup failed:", result.message);
+        setErrorMessage(result.message || "An error occurred");
       }
     } catch (error) {
-      console.error("Error registering user:", error);
+      console.error("Error resetting password:", error);
+      setErrorMessage("An error occurred");
     }
   };
 
   return (
     <Box component="div" sx={styles.root}>
       <Typography component="h2" variant="h3" align="center">
-        Register
+        Reset Password
       </Typography>
       <Snackbar
         sx={styles.snack}
@@ -101,38 +99,21 @@ const RegisterForm = () => {
           variant="filled"
           onClose={handleSnackClose}
         >
-          <Typography variant="h4">Register successful!</Typography>
+          <Typography variant="h4">Password reset request sent successfully!</Typography>
         </MuiAlert>
       </Snackbar>
 
       <form sx={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
         <Controller
-          name="username"
-          control={control}
-          defaultValue=""
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              sx={styles.textField}
-              variant="outlined"
-              margin="normal"
-              required
-              onChange={onChange}
-              id="username"
-              label="Username"
-              name="username"
-              autoFocus
-            />
-          )}
-        />
-        {errors.username && (
-          <Typography variant="h6" component="p" align="center">
-            {errors.username.message}
-          </Typography>
-        )}
-
-<Controller
           name="email"
           control={control}
+          rules={{
+            required: "Email is required",
+            pattern: {
+              value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              message: "Please provide a valid email address",
+            },
+          }}
           defaultValue=""
           render={({ field: { onChange, value } }) => (
             <TextField
@@ -141,6 +122,7 @@ const RegisterForm = () => {
               margin="normal"
               required
               onChange={onChange}
+              value={value}
               id="email"
               label="Email"
               name="email"
@@ -154,43 +136,15 @@ const RegisterForm = () => {
           </Typography>
         )}
 
-
-        <Controller
-          name="password"
-          control={control}
-          rules={{
-            required: "Password is required",
-            minLength: { value: 6, message: "Password must be at least 6 characters long" },
-            pattern: {
-              value: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-              message: "Password must contain at least one letter, one digit, and one special character",
-            },
-          }}
-          defaultValue=""
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              sx={styles.textField}
-              variant="outlined"
-              margin="normal"
-              required
-              name="password"
-              value={value}
-              onChange={onChange}
-              label="Password"
-              type="password"
-              id="password"
-            />
-          )}
-        />
-        {errors.password && (
-          <Typography variant="h6" component="p" align="center">
-            {errors.password.message}
+        {errorMessage && (
+          <Typography variant="h6" component="p" sx={styles.errorMessage}>
+            {errorMessage}
           </Typography>
         )}
 
         <Box sx={styles.buttons}>
           <Button type="submit" variant="contained" color="primary">
-            Register
+            Reset Password
           </Button>
           <Button
             type="reset"
@@ -198,10 +152,9 @@ const RegisterForm = () => {
             color="secondary"
             onClick={() => {
               reset({
-                username: "",
                 email: "",
-                password: "",
               });
+              setErrorMessage("");
             }}
           >
             Reset
@@ -212,4 +165,4 @@ const RegisterForm = () => {
   );
 };
 
-export default RegisterForm;
+export default ResetPasswordForm;
