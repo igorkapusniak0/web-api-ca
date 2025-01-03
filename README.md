@@ -9,6 +9,7 @@ A bullet-point list of the ADDITIONAL features you have implemented in the API *
 + Storing favourite movies in database
 + Storing favourite shows in database
 + Email password reset
++ error messages when incorrect credentials during login or registration
   
 
 ## Setup requirements.
