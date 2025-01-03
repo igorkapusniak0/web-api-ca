@@ -1,13 +1,13 @@
 # Assignment 2 - Web API.
 
-Name: Your Name
+Name: Igor Kapusniak
 
 ## Features.
 
 A bullet-point list of the ADDITIONAL features you have implemented in the API **THAT WERE NOT IN THE LABS** (or modifications to existing features)
  
 + Storing favourite movies in database
-+ Storing faourite shows in database
++ Storing favourite shows in database
 + Email password reset
   
 
